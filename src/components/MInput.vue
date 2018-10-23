@@ -1,21 +1,14 @@
 <template>
-  <!--<div class="custom-input middle" :data-state="viewState" :disabled="disabled" v-on:click="event_click">-->
-  <!--<div class="clear-btn icon-gm-delete" v-on:click="event_clear" v-if="type!=='textarea'" v-show="hasClear"></div>-->
-  <!--<div class="error-text">{{errorMsg}}</div>-->
-  <!--<input class="value-text" :type="type" :maxlength="maxlength" :placeholder="placeholder" :disabled="disabled" :readonly="readonly" :value="value" ref="inputElm" v-if="type!=='textarea'" v-on:focus="event_focus" v-on:blur="event_blur" v-on:input="event_input" v-on:keyup.enter="event_keyup_enter" />-->
-  <!--<textarea class="value-text" :rows="rows" :maxlength="maxlength" :placeholder="placeholder" :disabled="disabled" :readonly="readonly" :value="value" ref="textareaElm" v-if="type==='textarea'" v-on:focus="event_focus" v-on:blur="event_blur" v-on:input="event_input" v-on:keyup.enter="event_keyup_enter"></textarea>-->
-  <!--</div>-->
-
-  <div class="mInput-cell" :data-state="viewState" :disabled="disabled" v-on:click="event_click">
-    <div class="mInput-cell-flex" :data-error="errorMsg !== ''">
+  <div class="mInput-cell" :disabled="disabled" v-on:click="event_click">
+    <div class="mInput-cell-flex" :data-state="viewState">
       <label class="mInput-cell-label">{{name}}</label>
-      <input class="mInput-cell-item" :type="type" :maxlength="maxlength" :placeholder="placeholder"
+      <input class="mInput-cell-item" :type="type" :placeholder="placeholder"
              :disabled="disabled" :readonly="readonly" :value="value" ref="inputElm" v-if="type!=='textarea'"
              v-on:focus="event_focus" v-on:blur="event_blur" v-on:input="event_input"
              v-on:keyup.enter="event_keyup_enter"/>
-      <div class="close" v-show="value !== ''" @click="event_clear"></div>
+      <div class="close" v-show="clearShow" @click="event_clear"></div>
     </div>
-    <div class="error">{{errorMsg}}</div>
+    <div class="error" v-show="viewState == 2" >{{errorMsg}}</div>
   </div>
 </template>
 <script>
@@ -42,74 +35,75 @@
     },
     data() {
       return {
-        'rows': this.minRows,
         'errorMsg': '',
         'viewState': 0,
         'hasClear': 0,
-        'isFormElm': true,
+        'clearShow':false
       };
     },
     mounted() {
-      var that = this;
-      if (that.autoFocus) {
-        that.$refs['inputElm'].focus();
+      if (this.autoFocus) {
+        this.$refs['inputElm'].focus();
       }
     },
     methods: {
       check(value) {
-        var that = this;
-        let validVal = value != null ? value : that.value;
+        let validVal = value != null ? value : this.value;
         let valid = Validator(validVal,this.validator);
         if (!valid.state) {
-          that.errorMsg = valid.message;
-          that.viewState = 2;
+          this.errorMsg = valid.message;
+          this.viewState = 2;
           return false;
         }else {
-          that.errorMsg = '';
+          this.errorMsg = '';
         }
         return true;
       },
       //事件
       event_clear(e) {
-        var that = this;
-        that.$emit('input', '');
-        that.$emit('clear');
+        this.$emit('input', '');
+        this.$emit('clear');
+        this.$refs['inputElm'].focus();
+        this.clearShow = false;
       },
       event_blur(e) {
-        var that = this;
-        that.viewState = 0;
-        that.check();
-        that.$emit('blur', e);
+        this.viewState = 0;
+        this.clearShow = false;
+        this.check();
+        this.$emit('blur', e);
       },
       event_focus(e) {
-        var that = this;
-        that.viewState = 1;
-        that.$emit('focus', e);
+        this.viewState = 0;
+        if (this.value) {
+          this.clearShow = true;
+        }
+        this.$emit('focus', e);
       },
       event_input(e) {
         let value = e.currentTarget.value;
+        if (value) {
+          this.clearShow = true;
+        }
         this.$emit('input', value);
-        this.check(value);
+        //输入的时候实时校验
+        // this.check(value);
       },
       event_click(e) {
-        var that = this;
-        that.$emit('click', e);
+        this.$emit('click', e);
       },
       event_keyup_enter(e) {
         e.preventDefault();
         e.stopPropagation();
-        var that = this;
-        that.$emit('keyup-enter', that);
+        this.$emit('keyup-enter', e);
       },
     },
     watch: {
       value(now, old) {
-        var that = this;
-        if (that.disabled === undefined) {
-          if (that.value === '') {
-            that.hasClear = 0;
+        if (this.disabled === undefined) {
+          if (this.value === '') {
+            this.hasClear = 0;
           } else {
-            that.hasClear = 1;
+            this.hasClear = 1;
           }
         }
       }
@@ -146,7 +140,7 @@
       }
     }
 
-    .mInput-cell-flex[data-error] {
+    .mInput-cell-flex[data-state ='2'] {
       border: 1px solid #FF7F24;
       border-radius: 5px;
       box-shadow: 0 0 4px rgba(214, 133, 0, 0.6);

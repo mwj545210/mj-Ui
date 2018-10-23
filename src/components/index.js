@@ -1,9 +1,9 @@
 import MInput from './MInput.vue'
-import FormWrap from './FormWrap.vue'
+import MForm from './MForm.vue'
 
 export default {
   install(Vue) {
     Vue.component('MInput', MInput);
-    Vue.component('FormWrap', FormWrap);
+    Vue.component('MForm', MForm);
   }
 }

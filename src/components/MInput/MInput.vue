@@ -1,7 +1,7 @@
 <template>
   <div class="mInput-cell" :disabled="disabled" v-on:click="event_click">
     <div class="mInput-cell-flex" :data-state="viewState">
-      <label class="mInput-cell-label">{{name}}</label>
+      <label>{{name}}</label>
       <input class="mInput-cell-item" :type="type" :placeholder="placeholder"
              :disabled="disabled" :readonly="readonly" :value="value" ref="inputElm" v-if="type!=='textarea'"
              v-on:focus="event_focus" v-on:blur="event_blur" v-on:input="event_input"
@@ -12,7 +12,7 @@
   </div>
 </template>
 <script>
-  import {Validator} from '../assets/js/validator.js'
+  import {Validator} from '../../assets/js/validator.js'
   export default {
     props: {
       'name': '',
@@ -38,7 +38,8 @@
         'errorMsg': '',
         'viewState': 0,
         'hasClear': 0,
-        'clearShow':false
+        'clearShow':false,
+        'isFormElm': true,
       };
     },
     mounted() {
@@ -112,16 +113,17 @@
 </script>
 <style scoped lang="scss">
   .mInput-cell {
-
+    padding: 0 0.5rem;
     .mInput-cell-flex {
-      padding: 0 0.5rem;
       display: flex;
-      line-height: 2.5;
+      line-height: 1.5;
+      border-bottom: 1px solid #ececec;
+      overflow: hidden;
+      padding: .5rem 0;
 
-      .mInput-cell-label {
-        flex: 6rem;
+      label {
+        flex: 5rem 0 0;
         font-size: .8rem;
-        border-bottom: 1px solid #ececec;
         padding: .5rem 0;
       }
 
@@ -132,7 +134,6 @@
         box-sizing: border-box;
         -webkit-box-sizing: border-box;
         -moz-box-sizing: border-box;
-        border-bottom: 1px solid #ececec;
       }
 
       .mInput-cell-item:focus {

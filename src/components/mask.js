@@ -1,0 +1,3 @@
+const mask = function (option) {
+
+}

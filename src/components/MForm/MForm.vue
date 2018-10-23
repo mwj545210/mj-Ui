@@ -24,7 +24,6 @@
             },
             check: function () {
                 var that = this;
-                var len = that.$children.length;
                 var pass = true;
                 that.$children.forEach(function (item) {
                     if (item.isFormElm && item.check() === false) {

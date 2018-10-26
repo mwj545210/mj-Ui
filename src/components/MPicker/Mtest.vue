@@ -12,8 +12,8 @@
           <div class="scroller-mask" :data-count="visibleItemCount"></div>
           <div class="picker-center-highlight" style="height:36px;margin-top:-18px;">
           </div>
-          <div class="picker-slot picker-slot-absolute" style="flex:1;">
-            <div class="picker-slot-wrapper" id="www" ref="wrapper"></div>
+          <div class="picker-slot picker-slot-absolute" style="flex:1;" v-for="(item,index) of itemsData">
+            <div class="picker-slot-wrapper" :id="index" :ref="index"></div>
           </div>
         </div>
       </div>
@@ -27,7 +27,7 @@
   import {utils, markUtil} from "../../assets/js/utils";
 
   export default {
-    name: "MPicker",
+    name: "MTest",
     props: {
       //显示个数
       visibleItemCount: {
@@ -45,16 +45,17 @@
         }
       },
       //多级联
-      itemsData:{
-        type:Array,
-        default:function () {
-          return [[]];
+      itemsData: {
+        type: Array,
+        default: function () {
+          return [[{id: 1, value: "A"}, {id: 2, value: "B"}, {id: 3, value: "C"}],
+            [{id: 11, value: "a", parent: 1}, {id: 22, value: "ab", parent: 1}, {id: 33,value: "ac",parent: 1}, {id: 44, value: "D", parent: 2}, {id: 55, value: "E", parent: 2}, {id: 66, value: "F", parent: 3}]];
         }
       },
       //多少级联
-      itemsNum:{
-        type:Number,
-        default:1
+      itemsNum: {
+        type: Number,
+        default: 1
       },
       itemType: {
         type: String,
@@ -79,10 +80,12 @@
         defaultItems: [],
         currentIndex: '',
         resVal: '',
-        show: false
+        show: false,
+        currentData: [0, 0]
       }
     },
     created() {
+      console.log(this.itemsData);
       if (this.itemData.length > 0) {
         this.defaultItems = this.itemData;
       } else if (this.itemType) {
@@ -97,7 +100,9 @@
 
     },
     mounted() {
-      this.createWrapper("wrapper");
+      for (let item in this.itemsData) {
+        this.createWrapper(item);
+      }
     },
     methods: {
       showPicker() {
@@ -107,20 +112,34 @@
         this.show = false;
         this.$emit("input", this.resVal);
       },
-      createWrapper(wrapperId){
+      createWrapper(wrapperId) {
         let that = this;
-        let el = that.$refs[wrapperId];
-        let valueIndex = utils.contains(that.defaultItems, that.value);
-        valueIndex = valueIndex > 0 ? valueIndex : 0;
-        this.resVal = that.defaultItems[valueIndex];
+        let el = that.$refs[wrapperId][0];
+        let valueIndex = 0;
+        // let valueIndex = utils.contains(that.defaultItems, that.value);
+        // valueIndex = valueIndex > 0 ? valueIndex : 0;
+        // this.resVal = that.defaultItems[valueIndex];
 
         // 限定容器高度
         el.style.height = that.visibleItemCount * that.itemHeight + 'px';
 
         // 生成DOM
         let html = '';
-        that.defaultItems.forEach(data => {
-          html += `<div class="picker-item" style="height:36px;line-height:36px;">${data}</div>`;
+
+        //默认值中第1个（第1个数组索引）对应的数组对象 ---从索引1开始
+        let dbItem;
+        if (wrapperId - 1 >= 0) {
+          dbItem = that.itemsData[wrapperId - 1][that.currentData[wrapperId - 1]];
+        }
+
+        that.itemsData[wrapperId].forEach(data => {
+          if (dbItem) {
+            if (dbItem.id == data.parent) {
+              html += `<div class="picker-item" style="height:36px;line-height:36px;">${data.value}</div>`;
+            }
+          } else {
+            html += `<div class="picker-item" style="height:36px;line-height:36px;">${data.value}</div>`;
+          }
         });
         el.innerHTML = html;
 
@@ -143,8 +162,8 @@
         let dragState = {};
         let velocityTranslate, prevTranslate, pickerItems;
         let animationFrameId;
-        let dragRange = [-that.itemHeight * (that.defaultItems.length - Math.ceil(that.visibleItemCount / 2)), that.itemHeight * Math.floor(that.visibleItemCount / 2)];
-        draggable(that.$refs[wrapperId], {
+        let dragRange = [-that.itemHeight * (that.itemsData[wrapperId].length - Math.ceil(that.visibleItemCount / 2)), that.itemHeight * Math.floor(that.visibleItemCount / 2)];
+        draggable(that.$refs[wrapperId][0], {
           start: function (event) {
             cancelAnimationFrame(animationFrameId);
             animationFrameId = null;
@@ -153,12 +172,12 @@
               start: new Date(),
               startLeft: event.pageX,
               startTop: event.pageY,
-              startTranslateTop: tranUtil.getElementTranslate(that.$refs['wrapper']).top
+              startTranslateTop: tranUtil.getElementTranslate(that.$refs[wrapperId][0]).top
             };
-            pickerItems = that.$refs[wrapperId].querySelectorAll('.picker-item');
+            pickerItems = that.$refs[wrapperId][0].querySelectorAll('.picker-item');
           },
           drag: function (event) {
-            that.$refs[wrapperId].classList.add('dragging');
+            that.$refs[wrapperId][0].classList.add('dragging');
 
             dragState.left = event.pageX;
             dragState.top = event.pageY;
@@ -166,16 +185,16 @@
             let deltaY = dragState.top - dragState.startTop;
             let translate = dragState.startTranslateTop + deltaY;
 
-            tranUtil.translateElement(that.$refs[wrapperId], null, translate);
+            tranUtil.translateElement(that.$refs[wrapperId][0], null, translate);
             velocityTranslate = translate - prevTranslate || translate;
 
             prevTranslate = translate;
           },
 
           end: function () {
-            that.$refs[wrapperId].classList.remove('dragging');
+            that.$refs[wrapperId][0].classList.remove('dragging');
             let momentumRatio = 7;
-            let currentTranslate = tranUtil.getElementTranslate(that.$refs[wrapperId]).top;
+            let currentTranslate = tranUtil.getElementTranslate(that.$refs[wrapperId][0]).top;
             let duration = new Date() - dragState.start;
 
             let momentumTranslate;
@@ -195,9 +214,15 @@
               }
 
               translate = Math.max(Math.min(translate, dragRange[1]), dragRange[0]);
-              tranUtil.translateElement(that.$refs[wrapperId], null, translate);
+              tranUtil.translateElement(that.$refs[wrapperId][0], null, translate);
 
-              that.currentIndex = that.translate2Value(translate,wrapperId);
+              that.currentData[wrapperId] = that.translate2Value(translate, wrapperId);
+             if (wrapperId < that.itemsData.length-1) {
+               for (let i = parseInt(wrapperId) + 1; i < that.itemsData.length; i++) {
+                 that.createWrapper(i);
+               }
+             }
+              console.log(that.currentData);
             }, 10);
 
             dragState = {};
@@ -210,11 +235,11 @@
           return (valueIndex - offset) * -this.itemHeight;
         }
       },
-      translate2Value(translate,wrapperId) {
+      translate2Value(translate, wrapperId) {
         let that = this;
         translate = Math.round(translate / that.itemHeight) * that.itemHeight;
         let index = Math.abs((translate - Math.floor(that.visibleItemCount / 2) * that.itemHeight) / that.itemHeight);
-        let items = that.$refs[wrapperId].querySelectorAll('.picker-item');
+        let items = that.$refs[wrapperId][0].querySelectorAll('.picker-item');
 
         [].forEach.call(items, function (item, index) {
           item.classList.remove('picker-selected');
@@ -229,7 +254,7 @@
         this.resVal = this.defaultItems[newVal];
       },
       show(newValue) {
-        markUtil(newValue,this.showPicker);
+        markUtil(newValue, this.showPicker);
       }
     }
   }

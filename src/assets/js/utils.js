@@ -21,7 +21,6 @@ export const markUtil = function (option,callback) {
     dbBody.className="not-scroll";
     let div = document.createElement("div");
     div.className = "m-mark";
-    div.style.height = document.getElementsByTagName("html")[0].offsetHeight + 'px';
     div.addEventListener('click',callback);
     dbBody.appendChild(div);
   } else {

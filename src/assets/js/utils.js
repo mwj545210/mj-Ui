@@ -15,12 +15,14 @@ export const utils = {
   }
 };
 
-export const markUtil = function (option) {
+export const markUtil = function (option,callback) {
   let dbBody = document.getElementsByTagName("body")[0];
   if (option) {
-    dbBody.className="notScroll";
+    dbBody.className="not-scroll";
     let div = document.createElement("div");
     div.className = "m-mark";
+    div.style.height = document.getElementsByTagName("html")[0].offsetHeight + 'px';
+    div.addEventListener('click',callback);
     dbBody.appendChild(div);
   } else {
     dbBody.className="";

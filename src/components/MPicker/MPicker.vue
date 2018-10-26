@@ -10,7 +10,7 @@
       <div class="picker picker-3d">
         <div class="picker-items">
           <div class="picker-slot picker-slot-absolute" style="flex:1;">
-            <div class="scroller-mask"></div>
+            <div class="scroller-mask" :data-count="visibleItemCount"></div>
             <div class="picker-center-highlight" style="height:36px;margin-top:-18px;">
             </div>
             <div class="picker-slot-wrapper" id="wrapper" ref="wrapper"></div>
@@ -24,13 +24,7 @@
 
 <script>
   import {draggable, tranUtil} from "./picker.js"
-  import {utils,markUtil} from "../../assets/js/utils";
-
-  let VISIBEL_ITEMS_ANGLE_MAP = {
-    3: -45,
-    5: -25,
-    7: -15
-  };
+  import {utils, markUtil} from "../../assets/js/utils";
 
   export default {
     name: "MPicker",
@@ -58,13 +52,13 @@
         type: Number,
         default: 36
       },
-      placeholder:{
-        type:String,
-        default:''
+      placeholder: {
+        type: String,
+        default: ''
       },
-      labelText:{
-        type:String,
-        default:''
+      labelText: {
+        type: String,
+        default: ''
       }
     },
     data() {
@@ -85,7 +79,7 @@
             this.defaultItems = ['1993', '1994', '1995', '1996', '1997', '1998', '1999', '2000', '2001', '2002', '2003', '2004', '2005', '2006', '2007'];
             break;
         }
-      }else {
+      } else {
         this.defaultItems = ['1993', '1994', '1995', '1996', '1997', '1998', '1999', '2000', '2001', '2002', '2003', '2004', '2005', '2006', '2007'];
       }
     },
@@ -219,8 +213,8 @@
       currentIndex(newVal, oldVal) {
         this.resVal = this.defaultItems[newVal];
       },
-      show(newValue){
-        markUtil(newValue);
+      show(newValue) {
+        markUtil(newValue,this.showPicker);
       }
     }
   }
@@ -417,7 +411,19 @@
     background-image: -webkit-linear-gradient(top, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.6)), -webkit-linear-gradient(bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.6));
     background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.6)), linear-gradient(to top, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.6));
     background-position: top, bottom;
-    background-size: 100% 72px;
     background-repeat: no-repeat;
   }
+
+  .scroller-mask[data-count = '3'] {
+    background-size: 100% 36px;
+  }
+
+  .scroller-mask[data-count = '5'] {
+    background-size: 100% 72px;
+  }
+
+  .scroller-mask[data-count = '7'] {
+    background-size: 100% 110px;
+  }
+
 </style>

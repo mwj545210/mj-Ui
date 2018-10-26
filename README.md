@@ -1,6 +1,6 @@
 # mj-ui
 
-> A Ui Frame
+> 一个Vue的组件项目
 
 ## Build Setup
 

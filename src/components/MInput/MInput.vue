@@ -1,11 +1,10 @@
 <template>
-  <div class="mInput-cell" :disabled="disabled" v-on:click="event_click">
+  <div class="mInput-cell" :disabled="disabled" v-on:click="$emit('click')">
     <div class="mInput-cell-flex" :data-state="viewState">
       <label>{{name}}</label>
-      <input class="mInput-cell-item" :type="type" :placeholder="placeholder"
-             :disabled="disabled" :readonly="readonly" :value="value" ref="inputElm" v-if="type!=='textarea'"
-             v-on:focus="event_focus" v-on:blur="event_blur" v-on:input="event_input"
-             v-on:keyup.enter="event_keyup_enter"/>
+      <input :class="textRight?'mInput-cell-item item-right':'mInput-cell-item'" :type="type" :placeholder="placeholder"
+             :disabled="disabled" :readonly="readonly" :value="value" ref="inputElm"
+             v-on:focus="event_focus" v-on:blur="event_blur" v-on:input="event_input"/>
       <div class="close" v-show="clearShow" @click="event_clear"></div>
     </div>
     <div class="error" v-show="viewState == 2" >{{errorMsg}}</div>
@@ -15,31 +14,32 @@
   import {Validator} from '../../assets/js/validator.js'
   export default {
     props: {
-      'name': '',
-      'type': {
+      name: '',
+      type: {
         type: String,
         default: 'text'
       },
-      'value': {
+      value: {
         type: [String, Number],
         default: ''
       },
-      'readonly': null,
-      'disabled': null,
-      'autoFocus': {
+      readonly: null,
+      disabled: null,
+      autoFocus: {
         type: Boolean,
         default: false
       },
-      'validator': Array,
-      'placeholder': null
+      validator: Array,
+      placeholder: null,
+      textRight:false
     },
     data() {
       return {
-        'errorMsg': '',
-        'viewState': 0,
-        'hasClear': 0,
-        'clearShow':false,
-        'isFormElm': true,
+        errorMsg: '',
+        viewState: 0,
+        hasClear: 0,
+        clearShow:false,
+        isFormElm: true,
       };
     },
     mounted() {
@@ -89,14 +89,6 @@
         //输入的时候实时校验
         // this.check(value);
       },
-      event_click(e) {
-        this.$emit('click', e);
-      },
-      event_keyup_enter(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        this.$emit('keyup-enter', e);
-      },
     },
     watch: {
       value(now, old) {
@@ -136,8 +128,13 @@
         -moz-box-sizing: border-box;
       }
 
+      .item-right {
+        text-align: right;
+      }
+
       .mInput-cell-item:focus {
         outline: none;
+        text-align: left;
       }
     }
 

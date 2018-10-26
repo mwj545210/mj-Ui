@@ -2,7 +2,7 @@
   <div class="m-cell">
     <div class="m-cell-flex">
       <label>{{labelText}}</label>
-      <div class="m-cell-val" :align="right?'right':'left'">
+      <div class="m-cell-val" :align="right?'right':'left'" @click="$emit('click')">
           {{value}}
       </div>
       <div class="cell-ft" v-if="showFt">

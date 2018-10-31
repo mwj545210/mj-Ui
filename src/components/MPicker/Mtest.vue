@@ -12,7 +12,7 @@
           <div class="scroller-mask" :data-count="visibleItemCount"></div>
           <div class="picker-center-highlight" style="height:36px;margin-top:-18px;">
           </div>
-          <div class="picker-slot picker-slot-absolute" style="flex:1;" v-for="(item,index) of itemsData">
+          <div class="picker-slot picker-slot-absolute" style="flex:1;" v-for="(item,index) of defaultItems">
             <div class="picker-slot-wrapper" :id="index" :ref="index"></div>
           </div>
         </div>
@@ -23,8 +23,9 @@
 </template>
 
 <script>
-  import {draggable, tranUtil} from "./picker.js"
-  import {utils, markUtil} from "../../assets/js/utils";
+  import {draggable, translateUtil} from "./picker.js"
+  import {markUtil, recursionArray} from "../../assets/js/utils";
+  import {china_address} from "../../assets/js/china_address"
 
   export default {
     name: "MTest",
@@ -49,7 +50,9 @@
         type: Array,
         default: function () {
           return [[{id: 1, value: "A"}, {id: 2, value: "B"}, {id: 3, value: "C"}],
-            [{id: 11, value: "a", parent: 1}, {id: 22, value: "ab", parent: 1}, {id: 33,value: "ac",parent: 1}, {id: 44, value: "D", parent: 2}, {id: 55, value: "E", parent: 2}, {id: 66, value: "F", parent: 3}]];
+            [{id: 11, value: "a", parent: 1}, {id: 22, value: "ab", parent: 1}, {id: 33, value: "ac", parent: 1},
+              {id: 44, value: "D", parent: 2}, {id: 55, value: "E", parent: 2}, {id: 66, value: "F", parent: 3}],
+            [{id: 111, value: "a", parent: 11}, {id: 222, value: "ab", parent: 22}, {id: 112, value: "D", parent: 11}]];
         }
       },
       //多少级联
@@ -81,11 +84,12 @@
         currentIndex: '',
         resVal: '',
         show: false,
-        currentData: [0, 0]
+        currentData: [1, 1, 0],
+        dragRange:[]
       }
     },
     created() {
-      console.log(this.itemsData);
+      // console.log(this.itemsData);
       if (this.itemData.length > 0) {
         this.defaultItems = this.itemData;
       } else if (this.itemType) {
@@ -95,14 +99,12 @@
             break;
         }
       } else {
-        this.defaultItems = ['1993', '1994', '1995', '1996', '1997', '1998', '1999', '2000', '2001', '2002', '2003', '2004', '2005', '2006', '2007'];
+        this.defaultItems = china_address;
       }
-
     },
     mounted() {
-      for (let item in this.itemsData) {
-        this.createWrapper(item);
-      }
+      this.createdItem();
+
     },
     methods: {
       showPicker() {
@@ -112,13 +114,21 @@
         this.show = false;
         this.$emit("input", this.resVal);
       },
+      createdItem(){
+        this.defaultItems = recursionArray(china_address, "aearList",this.currentData);
+        for (let item in this.defaultItems) {
+          this.dragRange.push(0);
+          this.createWrapper(item);
+        }
+      },
       createWrapper(wrapperId) {
         let that = this;
         let el = that.$refs[wrapperId][0];
-        let valueIndex = 0;
+        let valueIndex = that.currentData[wrapperId];
         // let valueIndex = utils.contains(that.defaultItems, that.value);
         // valueIndex = valueIndex > 0 ? valueIndex : 0;
         // this.resVal = that.defaultItems[valueIndex];
+
 
         // 限定容器高度
         el.style.height = that.visibleItemCount * that.itemHeight + 'px';
@@ -129,31 +139,27 @@
         //默认值中第1个（第1个数组索引）对应的数组对象 ---从索引1开始
         let dbItem;
         if (wrapperId - 1 >= 0) {
-          dbItem = that.itemsData[wrapperId - 1][that.currentData[wrapperId - 1]];
+          dbItem = that.defaultItems[wrapperId - 1][that.currentData[wrapperId - 1]];
         }
 
-        that.itemsData[wrapperId].forEach(data => {
-          if (dbItem) {
-            if (dbItem.id == data.parent) {
-              html += `<div class="picker-item" style="height:36px;line-height:36px;">${data.value}</div>`;
-            }
-          } else {
-            html += `<div class="picker-item" style="height:36px;line-height:36px;">${data.value}</div>`;
-          }
+        that.defaultItems[wrapperId].forEach(data => {
+          html += `<div class="picker-item" style="height:36px;line-height:36px;">${data.areaName}</div>`;
         });
         el.innerHTML = html;
 
         // 激活当前item
         let pickerItems = document.querySelectorAll('.picker-item');
-        pickerItems[valueIndex].classList.add('picker-selected');
+        pickerItems[that.currentData[wrapperId]].classList.add('picker-selected');
+
+        that.dragRange[wrapperId] = [-that.itemHeight * (that.defaultItems[wrapperId].length - Math.ceil(that.visibleItemCount / 2)), that.itemHeight * Math.floor(that.visibleItemCount / 2)];
 
         document.addEventListener('DOMContentLoaded', function () {
           that.initEvents(wrapperId);
           //定位默认值
-          tranUtil.translateElement(el, null, that.value2Translate(valueIndex));
+          translateUtil.translateElement(el, null, that.value2Translate(that.currentData[wrapperId]));
           let items = el.querySelectorAll('.picker-item');
           [].forEach.call(items, function (item, index) {
-            tranUtil.translateElement(item, null, that.itemHeight * index);
+            translateUtil.translateElement(item, null, that.itemHeight * index);
           });
         });
       },
@@ -162,17 +168,16 @@
         let dragState = {};
         let velocityTranslate, prevTranslate, pickerItems;
         let animationFrameId;
-        let dragRange = [-that.itemHeight * (that.itemsData[wrapperId].length - Math.ceil(that.visibleItemCount / 2)), that.itemHeight * Math.floor(that.visibleItemCount / 2)];
         draggable(that.$refs[wrapperId][0], {
           start: function (event) {
             cancelAnimationFrame(animationFrameId);
             animationFrameId = null;
             dragState = {
-              range: dragRange,
+              range: that.dragRange[wrapperId],
               start: new Date(),
               startLeft: event.pageX,
               startTop: event.pageY,
-              startTranslateTop: tranUtil.getElementTranslate(that.$refs[wrapperId][0]).top
+              startTranslateTop: translateUtil.getElementTranslate(that.$refs[wrapperId][0]).top
             };
             pickerItems = that.$refs[wrapperId][0].querySelectorAll('.picker-item');
           },
@@ -185,7 +190,7 @@
             let deltaY = dragState.top - dragState.startTop;
             let translate = dragState.startTranslateTop + deltaY;
 
-            tranUtil.translateElement(that.$refs[wrapperId][0], null, translate);
+            translateUtil.translateElement(that.$refs[wrapperId][0], null, translate);
             velocityTranslate = translate - prevTranslate || translate;
 
             prevTranslate = translate;
@@ -194,14 +199,13 @@
           end: function () {
             that.$refs[wrapperId][0].classList.remove('dragging');
             let momentumRatio = 7;
-            let currentTranslate = tranUtil.getElementTranslate(that.$refs[wrapperId][0]).top;
+            let currentTranslate = translateUtil.getElementTranslate(that.$refs[wrapperId][0]).top;
             let duration = new Date() - dragState.start;
 
             let momentumTranslate;
             if (duration < 300) {
               momentumTranslate = currentTranslate + velocityTranslate * momentumRatio;
             }
-
 
             let dragRange = dragState.range;
 
@@ -214,14 +218,16 @@
               }
 
               translate = Math.max(Math.min(translate, dragRange[1]), dragRange[0]);
-              tranUtil.translateElement(that.$refs[wrapperId][0], null, translate);
+              translateUtil.translateElement(that.$refs[wrapperId][0], null, translate);
 
               that.currentData[wrapperId] = that.translate2Value(translate, wrapperId);
-             if (wrapperId < that.itemsData.length-1) {
-               for (let i = parseInt(wrapperId) + 1; i < that.itemsData.length; i++) {
-                 that.createWrapper(i);
-               }
-             }
+
+              for (let i = parseInt(wrapperId) + 1; i < that.defaultItems.length; i++) {
+                that.currentData[i] = 0;
+              }
+
+              that.defaultItems = recursionArray(china_address, "aearList", that.currentData);
+              that.createdItem();
               console.log(that.currentData);
             }, 10);
 

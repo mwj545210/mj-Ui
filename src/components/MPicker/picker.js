@@ -162,8 +162,7 @@ var translateUtil = (function () {
   };
 })();
 
-
 module.exports = {
   draggable: draggable,
-  tranUtil: translateUtil
+  translateUtil: translateUtil
 }

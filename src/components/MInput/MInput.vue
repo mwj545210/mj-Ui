@@ -179,7 +179,7 @@
 
       position: absolute;
       right: .9rem;
-      margin-top: .85rem;
+      margin-top: .65rem;
     }
     /* use cross as close button */
     .close::before {

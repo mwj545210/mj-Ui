@@ -1,17 +1,20 @@
 <template>
   <div class="m-popup">
     <div @click="click">测试</div>
-    <div class="popup-cell" :style="height + 'px'" v-show="show" ref="show">
+    <div class="popup-cell" :style="'height:'+height + 'px;'" v-if="show" ref="show">
+      <div class="slot-content">
+        <slot name="content"></slot>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 
-  import MPicker from "../MPicker/MPicker";
+  import {markUtil} from "../../assets/js/utils";
+
   export default {
     name: "MPopup",
-    components: {MPicker},
     props: {
       "height": {
         type: [String, Number],
@@ -21,17 +24,14 @@
     data() {
       return {
         'isFormElm': true,
-        'show': true
+        'show': false
       }
     },
     methods:{
       click(){
-        this.show = !this.show;
-        if (this.show) {
-          // this.$refs['show'].setAttribute("style","transform: translateY(0);")
-        } else {
-          // this.$refs['show'].setAttribute("style","")
-        }
+        let that = this;
+        that.show = !that.show;
+        markUtil(that.show,that.click)
       }
     }
   }
@@ -58,8 +58,10 @@
       left: 0;
       bottom: 0;
       width: 100%;
-      background: #eee;
-      //max-height: 100%;
+      z-index: 401;
+      background: #ffffff;
+      border-top: 1px solid #ececec;
+      max-height: 100%;
       height: auto;
       animation:mymove .3s;
       animation-fill-mode:forwards;
@@ -69,6 +71,10 @@
       -webkit-animation:mymove .3s;
       -webkit-animation-fill-mode:forwards;
       overflow-y: auto;
+    }
+
+    .slot-content {
+      margin: 5px;
     }
   }
 

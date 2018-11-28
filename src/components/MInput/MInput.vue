@@ -117,6 +117,7 @@
         flex: 5rem 0 0;
         font-size: .8rem;
         padding: .5rem 0;
+        text-align: center;
       }
 
       .mInput-cell-item {

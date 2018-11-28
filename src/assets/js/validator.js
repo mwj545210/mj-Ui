@@ -54,17 +54,24 @@ var validator = {
     valid: function (val) {
       return idCardVali.test(val)
     },
-    message: '请输入非特殊字符'
+    message: '请输入正确的身份证'
   },
   emoji: {
     valid: function (val) {
       return emoji.test(val)
     },
-    message: '请输入非特殊字符'
+    message: '有非特殊字符'
   }
 
 };
 
+/**
+ * 校验
+ * @param val 校验内容
+ * @param validList 输入框校验的数组 如:['mobile','required']
+ * @returns {{state: boolean, message: string}}
+ * @constructor
+ */
 export const Validator = function (val, validList) {
   let result = {
     state:true,

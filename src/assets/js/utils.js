@@ -18,11 +18,16 @@ export const utils = {
 let noMove = function (e) {
   e.preventDefault();
 };
-//生成遮罩层
-export const markUtil = function (option, callback) {
+
+/**
+ * 生成遮罩层
+ * @param show 是否显示遮罩层
+ * @param callback 点击遮罩层回调
+ */
+export const markUtil = function (show, callback) {
   let dbBody = document.getElementsByTagName("body")[0];
 
-  if (option) {
+  if (show) {
     dbBody.className = "not-scroll";
     let div = document.createElement("div");
     div.className = "m-mark";
